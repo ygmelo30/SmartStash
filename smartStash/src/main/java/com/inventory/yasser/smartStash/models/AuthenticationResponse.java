@@ -2,8 +2,8 @@ package com.inventory.yasser.smartStash.models;
 
 public class AuthenticationResponse {
 
-    private final String response;
-    private final String token;
+    private  String response;
+    private  String token;
 
 
     public AuthenticationResponse(String token, String response) {
