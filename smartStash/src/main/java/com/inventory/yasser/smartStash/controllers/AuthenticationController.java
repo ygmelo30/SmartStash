@@ -1,14 +1,31 @@
 package com.inventory.yasser.smartStash.controllers;
 
 import com.inventory.yasser.smartStash.models.AuthenticationResponse;
+import com.inventory.yasser.smartStash.models.Role;
 import com.inventory.yasser.smartStash.models.User;
+import com.inventory.yasser.smartStash.models.UserRole;
+import com.inventory.yasser.smartStash.payload.request.LoginRequest;
+import com.inventory.yasser.smartStash.payload.request.SignupRequest;
+import com.inventory.yasser.smartStash.payload.response.JwtResponse;
+import com.inventory.yasser.smartStash.payload.response.MessageResponse;
+import com.inventory.yasser.smartStash.repositories.RoleRepo;
+import com.inventory.yasser.smartStash.repositories.UserRepo;
 import com.inventory.yasser.smartStash.services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 public class AuthenticationController {
@@ -19,7 +36,7 @@ public class AuthenticationController {
     AuthenticationManager authenticationManager;
 
     @Autowired
-    RoleRepository roleRepository;
+    RoleRepo roleRepository;
 
     @Autowired
     PasswordEncoder encoder;
@@ -27,6 +44,11 @@ public class AuthenticationController {
     @Autowired
     JwtUtils jwtUtils;
 
+    @Autowired
+    LoginRequest loginRequest;
+
+    @Autowired
+    UserRepo userRepo;
 
     public AuthenticationController(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
@@ -62,4 +84,61 @@ public class AuthenticationController {
                 userDetails.getEmail(),
                 roles));
     }
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+        if (userRepo.existsByUsername(signUpRequest.getUsername())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Username is already taken!"));
+        }
+
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Email is already in use!"));
+        }
+
+        // Create new user's account
+        User user = new User(signUpRequest.getUsername(),
+                signUpRequest.getEmail(),
+                encoder.encode(signUpRequest.getPassword()));
+
+        Set<String> strRoles = signUpRequest.getRole();
+        Set<UserRole> roles = new HashSet<>();
+
+        if (strRoles == null) {
+            UserRole userRole = roleRepository.findByName(UserRole.USER)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            roles.add(userRole);
+        } else {
+            strRoles.forEach(role -> {
+                switch (role) {
+                    case "admin":
+                        UserRole adminRole = roleRepository.findByName(UserRole.ADMIN)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(adminRole);
+
+                        break;
+                    case "mod":
+                        Role modRole = roleRepository.findByName(Userr.ROLE_MODERATOR)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(modRole);
+
+                        break;
+                    default:
+                        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(userRole);
+                }
+            });
+        }
+
+        user.setRoles(roles);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    }
+
+
 }
