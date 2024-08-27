@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 @RestController
 public class AuthenticationController {
 
-    private final AuthenticationService authenticationService;
 
     @Autowired
     AuthenticationManager authenticationManager;
@@ -49,25 +48,11 @@ public class AuthenticationController {
     @Autowired
     JwtUtils jwtUtils;
 
-    @Autowired
-    LoginRequest loginRequest;
 
     @Autowired
     UserRepo userRepo;
 
-    public AuthenticationController(AuthenticationService authenticationService) {
-        this.authenticationService = authenticationService;
-    }
 
-    @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register (@RequestBody User request) {
-        return ResponseEntity.ok(authenticationService.register(request));
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login (@RequestBody User request) {
-        return ResponseEntity.ok(authenticationService.authenticate(request));
-    }
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
