@@ -1,6 +1,5 @@
 package com.inventory.yasser.smartStash.controllers;
 
-import com.inventory.yasser.smartStash.models.AuthenticationResponse;
 import com.inventory.yasser.smartStash.models.Role;
 import com.inventory.yasser.smartStash.models.User;
 import com.inventory.yasser.smartStash.models.UserRole;
@@ -11,7 +10,6 @@ import com.inventory.yasser.smartStash.payload.response.MessageResponse;
 import com.inventory.yasser.smartStash.repositories.RoleRepo;
 import com.inventory.yasser.smartStash.repositories.UserRepo;
 import com.inventory.yasser.smartStash.security.jwt.JwtUtils;
-import com.inventory.yasser.smartStash.services.AuthenticationService;
 import com.inventory.yasser.smartStash.services.UserDetailsImpl;
 
 
@@ -22,9 +20,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.HashSet;
@@ -32,6 +28,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
+@RequestMapping("/api/auth")
 @RestController
 public class AuthenticationController {
 
@@ -54,8 +52,15 @@ public class AuthenticationController {
 
 
 
+
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+
+
+        System.out.println("Signup request received: " + loginRequest);
+        System.out.println("Signup request received: " + loginRequest.getUsername());
+        System.out.println("Signup request received: " + loginRequest.getPassword());
+
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -75,8 +80,14 @@ public class AuthenticationController {
                 roles));
     }
 
+
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+
+        System.out.println("Signup request received: " + signUpRequest);
+        System.out.println("Signup request received: " + signUpRequest.getUsername());
+        System.out.println("Signup request received: " + signUpRequest.getPassword());
+
         if (userRepo.existsByUsername(signUpRequest.getUsername())) {
             return ResponseEntity
                     .badRequest()
@@ -131,6 +142,8 @@ public class AuthenticationController {
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
+
+
 
 
 }

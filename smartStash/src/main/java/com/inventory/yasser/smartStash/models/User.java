@@ -2,6 +2,7 @@ package com.inventory.yasser.smartStash.models;
 
 import jakarta.persistence.*;
 
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
@@ -20,6 +21,8 @@ public class User  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+
 
     @NotBlank
     @Size(max = 15)
